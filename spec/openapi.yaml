@@ -1,0 +1,124 @@
+openapi: 3.0.0
+info:
+  title: Toy ToDo API
+  description: シンプルなタスク管理のためのRESTful API
+  version: 1.0.0
+  
+servers:
+  - url: http://localhost:8080/api
+    description: ローカル開発環境
+
+paths:
+  /tasks:
+    get:
+      summary: タスク一覧取得
+      description: 登録されている全タスクを取得する
+      parameters:
+        - name: completed
+          in: query
+          required: false
+          description: タスクの完了状態によるフィルタリング（指定しない場合は全てのタスクを取得）
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: タスク一覧の取得に成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+    post:
+      summary: タスク作成
+      description: 新しいタスクを作成する
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  description: タスクのタイトル
+      responses:
+        '201':
+          description: タスクの作成に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: 不正なリクエスト (タイトルが空など)
+          
+  /tasks/{taskId}:
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        description: 対象タスクのID
+        schema:
+          type: string
+    
+    patch:
+      summary: タスク更新
+      description: 既存タスクの完了状態を更新する
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                completed:
+                  type: boolean
+                  description: タスクの完了状態
+      responses:
+        '200':
+          description: タスクの更新に成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '404':
+          description: 指定されたIDのタスクが見つからない
+    
+    delete:
+      summary: タスク削除
+      description: 指定されたIDのタスクを削除する
+      responses:
+        '204':
+          description: タスクの削除に成功
+        '404':
+          description: 指定されたIDのタスクが見つからない
+
+components:
+  schemas:
+    Task:
+      type: object
+      required:
+        - id
+        - title
+        - completed
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: タスクの一意識別子
+        title:
+          type: string
+          description: タスクのタイトル
+        completed:
+          type: boolean
+          description: タスクの完了状態
+        createdAt:
+          type: string
+          format: date-time
+          description: タスク作成日時
+        updatedAt:
+          type: string
+          format: date-time
+          description: タスク更新日時
